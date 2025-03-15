@@ -120,7 +120,7 @@ To improve this, you will leverage [testcontainers](https://github.com/testconta
 uv add testcontainers --dev
 ```
 
-Now, the docker can be started at the session fixture level, in [`tests/conftest.py](../tests/conftest.py), you can add an extra fixture:
+Now, the docker can be started at the session fixture level, in [`tests/conftest.py`](../tests/conftest.py), you can add an extra fixture:
 
 ```python
 from testcontainers.core.container import DockerContainer
