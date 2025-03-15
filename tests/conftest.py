@@ -4,12 +4,36 @@ import pytest
 from faker import Faker
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import collect_list
+from testcontainers.core.container import DockerContainer
+from testcontainers.core.waiting_utils import wait_for_logs
 
 
 @pytest.fixture(scope="session")
-def spark_session() -> Generator[SparkSession, Any, Any]:
+def spark_connect_start():
+    kwargs = {
+        "entrypoint": "/opt/spark/sbin/start-connect-server.sh org.apache.spark.deploy.master.Master --packages org.apache.spark:spark-connect_2.12:3.5.2,io.delta:delta-core_2.12:2.3.0 --conf spark.driver.extraJavaOptions='-Divy.cache.dir=/tmp -Divy.home=/tmp' --conf spark.connect.grpc.binding.port=8081",
+    }
+    with (
+        DockerContainer(
+            "apache/spark",
+        )
+        .with_bind_ports(8081, 8081)
+        .with_env("SPARK_NO_DAEMONIZE", "True")
+        .with_kwargs(**kwargs) as container
+    ):
+        _ = wait_for_logs(
+            container, "SparkConnectServer: Spark Connect server started at"
+        )
+        yield container
+
+
+@pytest.fixture(scope="session")
+def spark_session(
+    spark_connect_start: DockerContainer,
+) -> Generator[SparkSession, Any, Any]:
+    ip = spark_connect_start.get_container_host_ip()
     yield (
-        SparkSession.builder.master("local")
+        SparkSession.builder.remote(f"sc://{ip}:8081")  # type: ignore
         .appName("Testing PySpark Example")
         .getOrCreate()
     )

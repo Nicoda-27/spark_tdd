@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["pyspark>=3.5.4"]
+dependencies = ["pyspark[connect]>=3.5.4", "setuptools>=75.6.0"]
 
 [dependency-groups]
-dev = ["faker>=33.1.0", "pytest>=8.3.4", "ruff>=0.8.4"]
+dev = ["faker>=33.1.0", "pytest>=8.3.4", "ruff>=0.8.4", "testcontainers>=4.9.0"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
